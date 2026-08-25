@@ -313,7 +313,113 @@ class dlinkedlist:
 
             current_node = nodo_previo
 
+    def depuracion_de_consulta_externa(self):
+        if self.head is None:
+            return
+        
+        current_node = self.head
 
+        for i in range(self.size):
+
+            nodo_siguiente = current_node.next
+
+            if current_node.value.categoria == "adulto" and current_node.value.nivel_triage > 3:
+
+                if current_node.prev is None and current_node.next is None:
+                    self.head = None
+                    self.tail = None
+
+                elif current_node.prev is None:
+                    self.head = current_node.next
+                    self.head.prev = None
+
+                elif current_node.next is None:
+                    current_node.prev.next = None
+                    self.tail = current_node.prev
+
+                else:
+                    current_node.prev.next = current_node.next
+                    current_node.next.prev = current_node.prev
+
+                current_node.next = None
+                current_node.prev = None
+                self.size -= 1
+
+            current_node = nodo_siguiente
+
+    def aislamiento_por_zona_de_contagio(self, id_inicio, id_final):
+        if self.head is None:
+            return lista_aislamiento
+        
+        lista_aislamiento = dlinkedlist()
+
+        pos_inicio = None
+        pos_final = None
+        id = 0
+
+        for nodo_actual in self:
+            if nodo_actual.value.id_paciente == id_inicio:
+                pos_inicio = id
+            if nodo_actual.value.id_paciente == id_final:
+                pos_final = id
+            id += 1
+
+        if pos_inicio is None or pos_final is None:
+            return lista_aislamiento
+
+        if pos_inicio > pos_final:
+            pos_inicio, pos_final = pos_final, pos_inicio
+
+        if pos_final - pos_inicio <= 1:
+            return lista_aislamiento
+    
+        current_node = self.head
+        index = 0
+
+        while (pos_inicio + 1) != index:
+            current_node = current_node.next
+            index += 1
+
+        for i in range((pos_final - pos_inicio) - 1):
+            siguiente_nodo = current_node.next
+
+            if current_node.prev is None:
+                self.head = current_node.next
+                self.head.prev = None
+                
+            elif current_node.next is None:
+                current_node.prev.next = None
+                self.tail = current_node.prev
+                
+            else:
+                current_node.prev.next = current_node.next
+                current_node.next.prev = current_node.prev
+
+            if lista_aislamiento.head is None:
+                lista_aislamiento.head = current_node
+                lista_aislamiento.tail = current_node
+
+            else:
+                lista_aislamiento.tail.next = current_node
+                current_node.prev = lista_aislamiento.tail
+                lista_aislamiento.tail = current_node
+
+            self.size -= 1
+            lista_aislamiento.size += 1
+            current_node = siguiente_nodo
+
+        return lista_aislamiento
+
+
+            
+            
+
+
+
+
+
+
+            
 class Paciente:
     def __init__(self, id_paciente, categoria, nivel_triage):
       self.id_paciente = id_paciente
