@@ -348,10 +348,10 @@ class dlinkedlist:
             current_node = nodo_siguiente
 
     def aislamiento_por_zona_de_contagio(self, id_inicio, id_final):
+        lista_aislamiento = dlinkedlist()
+
         if self.head is None:
             return lista_aislamiento
-        
-        lista_aislamiento = dlinkedlist()
 
         pos_inicio = None
         pos_final = None
@@ -368,7 +368,9 @@ class dlinkedlist:
             return lista_aislamiento
 
         if pos_inicio > pos_final:
-            pos_inicio, pos_final = pos_final, pos_inicio
+            temp = pos_inicio
+            pos_inicio = pos_final
+            pos_final = temp
 
         if pos_final - pos_inicio <= 1:
             return lista_aislamiento
@@ -380,49 +382,204 @@ class dlinkedlist:
             current_node = current_node.next
             index += 1
 
-        for i in range((pos_final - pos_inicio) - 1):
-            siguiente_nodo = current_node.next
+        inicio_bloque = current_node
 
-            if current_node.prev is None:
-                self.head = current_node.next
-                self.head.prev = None
-                
-            elif current_node.next is None:
-                current_node.prev.next = None
-                self.tail = current_node.prev
-                
-            else:
-                current_node.prev.next = current_node.next
-                current_node.next.prev = current_node.prev
+        while (pos_final - 1) != index:
+            current_node = current_node.next
+            index += 1
 
-            if lista_aislamiento.head is None:
-                lista_aislamiento.head = current_node
-                lista_aislamiento.tail = current_node
+        fin_bloque = current_node
 
-            else:
-                lista_aislamiento.tail.next = current_node
-                current_node.prev = lista_aislamiento.tail
-                lista_aislamiento.tail = current_node
+        nodo_antes = inicio_bloque.prev
+        nodo_despues = fin_bloque.next
 
-            self.size -= 1
-            lista_aislamiento.size += 1
-            current_node = siguiente_nodo
+        nodo_antes.next = nodo_despues
+        nodo_despues.prev = nodo_antes
+
+        inicio_bloque.prev = None
+        fin_bloque.next = None
+
+        lista_aislamiento.head = inicio_bloque
+        lista_aislamiento.tail = fin_bloque
+
+        self.size -= (pos_final - pos_inicio) - 1
+        lista_aislamiento.size = (pos_final - pos_inicio) - 1
 
         return lista_aislamiento
 
+    def inversion_condicional_de_flujo(self):
+        if self.head is None:
+            return
 
-            
-            
+        cantidad_cat_pediatria = 0
+        cantidad_cat_adulto = 0
+        
+        for current in self:
+            if current.value.categoria == "pediatria":
+                cantidad_cat_pediatria += 1
+            elif current.value.categoria == "adulto":
+                cantidad_cat_adulto += 1
 
+        if cantidad_cat_pediatria > cantidad_cat_adulto:
+            current_node = self.head
 
+            for i in range(self.size):
+                siguiente_nodo = current_node.next
 
+                temporal = current_node.next
+                current_node.next = current_node.prev
+                current_node.prev = temporal
 
+                current_node = siguiente_nodo
 
+            antigua_cabeza = self.head
+            self.head = self.tail
+            self.tail = antigua_cabeza
 
-            
+    def reorganización_multicriterio_estable(self):
+        if self.head is None:
+            return
+
+        current_node = self.head.next
+
+        while current_node is not None:
+
+            siguiente_nodo = current_node.next
+            nodo_anterior = current_node.prev
+
+            while nodo_anterior is not None:
+
+                va_antes = False
+
+                if current_node.value.nivel_triage < nodo_anterior.value.nivel_triage:
+                    va_antes = True
+
+                elif current_node.value.nivel_triage == nodo_anterior.value.nivel_triage:
+
+                    prioridad_actual = 0
+                    prioridad_anterior = 0
+
+                    if current_node.value.categoria == "tercera_edad":
+                        prioridad_actual = 1
+                    elif current_node.value.categoria == "pediatria":
+                        prioridad_actual = 2
+                    else:
+                        prioridad_actual = 3
+
+                    if nodo_anterior.value.categoria == "tercera_edad":
+                        prioridad_anterior = 1
+                    elif nodo_anterior.value.categoria == "pediatria":
+                        prioridad_anterior = 2
+                    else:
+                        prioridad_anterior = 3
+
+                    if prioridad_actual < prioridad_anterior:
+                        va_antes = True
+
+                if va_antes:
+                    nodo_anterior = nodo_anterior.prev
+                else:
+                    break
+
+            if nodo_anterior is not current_node.prev:
+
+                if current_node.next:
+                    current_node.prev.next = current_node.next
+                    current_node.next.prev = current_node.prev
+                else:
+                    current_node.prev.next = None
+                    self.tail = current_node.prev
+
+                if nodo_anterior is None:
+
+                    current_node.prev = None
+                    current_node.next = self.head
+                    self.head.prev = current_node
+                    self.head = current_node
+
+                else:
+
+                    siguiente = nodo_anterior.next
+
+                    current_node.prev = nodo_anterior
+                    current_node.next = siguiente
+
+                    nodo_anterior.next = current_node
+
+                    if siguiente:
+                        siguiente.prev = current_node
+                    else:
+                        self.tail = current_node
+
+            current_node = siguiente_nodo
+
+    def intercalado_de_emergencia(self, lista_derivados):
+        if lista_derivados.head is None:
+            return
+        
+        if self.head is None:
+            self.head = lista_derivados.head
+            self.tail = lista_derivados.tail
+            lista_derivados.head = None
+            lista_derivados.tail = None
+            return
+
+        actual_principal = self.head
+        actual_derivado = lista_derivados.head
+        contador = 0
+
+        while actual_principal is not None and actual_derivado is not None:
+
+            contador += 1
+
+            if contador == 2:
+
+                siguiente_derivado = actual_derivado.next
+                siguiente_principal = actual_principal.next
+
+                if actual_derivado.prev:
+                    actual_derivado.prev.next = actual_derivado.next
+                else:
+                    lista_derivados.head = actual_derivado.next
+
+                if actual_derivado.next:
+                    actual_derivado.next.prev = actual_derivado.prev
+                else:
+                    lista_derivados.tail = actual_derivado.prev
+
+                actual_derivado.prev = actual_principal
+                actual_derivado.next = siguiente_principal
+                actual_principal.next = actual_derivado
+
+                if siguiente_principal:
+                    siguiente_principal.prev = actual_derivado
+                else:
+                    self.tail = actual_derivado
+
+                contador = 0
+                actual_derivado = siguiente_derivado
+                actual_principal = siguiente_principal
+
+            else:
+                actual_principal = actual_principal.next
+
+        if actual_derivado is not None:
+            resto_head = actual_derivado
+            resto_tail = lista_derivados.tail
+
+            self.tail.next = resto_head
+            resto_head.prev = self.tail
+            self.tail = resto_tail
+
+        lista_derivados.head = None
+        lista_derivados.tail = None
+
 class Paciente:
     def __init__(self, id_paciente, categoria, nivel_triage):
       self.id_paciente = id_paciente
       self.categoria = categoria
       self.nivel_triage = nivel_triage
+
+    def __str__(self):
+        return f"{self.id_paciente}({self.categoria},t{self.nivel_triage})"
 
