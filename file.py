@@ -520,6 +520,10 @@ class dlinkedlist:
         if self.head is None:
             self.head = lista_derivados.head
             self.tail = lista_derivados.tail
+
+            self.size = lista_derivados.size
+            lista_derivados.size = 0
+
             lista_derivados.head = None
             lista_derivados.tail = None
             return
@@ -571,8 +575,11 @@ class dlinkedlist:
             resto_head.prev = self.tail
             self.tail = resto_tail
 
+        self.size += lista_derivados.size
+
         lista_derivados.head = None
         lista_derivados.tail = None
+        lista_derivados.size = 0
 
 class Paciente:
     def __init__(self, id_paciente, categoria, nivel_triage):
